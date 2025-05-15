@@ -135,8 +135,8 @@
     <div id="slotMachine">
         <div class="reels">
             <div class="reel" id="reel1" data-symbol="♠">♠</div>
-            <div class="reel" id="reel2" data="♥">♥</div>
-            <div class="reel" id="reel3" data="♦">♦</div>
+            <div class="reel" id="reel2" data-symbol="♥">♥</div>
+            <div class="reel" id="reel3" data-symbol="♦">♦</div>
         </div>
         <div id="controls">
             <div id="betControls">
@@ -151,6 +151,7 @@
     <script>
         let money = 50000;
         let currentBet = 2000;
+        let lossStreak = 0;
         const symbols = ['♠', '♣', '♥', '♦', '7'];
         const spinSound = new Audio('spin.mp3');
         const winSound = new Audio('win.mp3');
@@ -175,43 +176,72 @@
             document.getElementById('currentBet').textContent = `₵${currentBet.toLocaleString()}`;
         }
 
+        function calculateOutcome() {
+            const firstSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+            let secondSymbol, thirdSymbol;
+            
+            // Increase match probability based on loss streak (max 60% chance)
+            const matchProbability = Math.min(0.6, lossStreak * 0.03);
+            
+            // Calculate second symbol
+            secondSymbol = Math.random() < matchProbability 
+                ? firstSymbol 
+                : symbols[Math.floor(Math.random() * symbols.length)];
+            
+            // Calculate third symbol with increased probability
+            thirdSymbol = Math.random() < (matchProbability * 1.2) 
+                ? firstSymbol 
+                : symbols[Math.floor(Math.random() * symbols.length)];
+
+            return [firstSymbol, secondSymbol, thirdSymbol];
+        }
+
         function spin() {
             if (isSpinning || money < currentBet) return;
 
             isSpinning = true;
             money -= currentBet;
             updateMoney();
-            spinSound.play().catch(() => {}); // Suppress mobile play errors
+            spinSound.play().catch(() => {});
 
+            const targetSymbols = calculateOutcome();
             const reels = document.querySelectorAll('.reel');
             let spinsCompleted = 0;
 
             reels.forEach((reel, index) => {
                 let spins = 0;
+                const targetSymbol = targetSymbols[index];
                 const spinInterval = setInterval(() => {
-                    const symbol = symbols[Math.floor(Math.random() * symbols.length)];
-                    reel.textContent = symbol;
-                    reel.setAttribute('data-symbol', symbol);
-                    spins++;
-                    if (spins > 15 + (index * 5)) {
+                    if (spins < 15 + (index * 5)) {
+                        reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                    } else {
+                        reel.textContent = targetSymbol;
+                        reel.setAttribute('data-symbol', targetSymbol);
                         clearInterval(spinInterval);
                         if (++spinsCompleted === 3) {
-                            checkWin();
+                            checkWin(targetSymbols);
                             isSpinning = false;
                         }
                     }
+                    spins++;
                 }, 50);
             });
         }
 
-        function checkWin() {
-            const symbols = Array.from(document.querySelectorAll('.reel')).map(reel => reel.textContent);
-            if (new Set(symbols).size === 1) {
-                const winnings = currentBet * 5;
+        function checkWin(result) {
+            const allSame = result.every(symbol => symbol === result[0]);
+            if (allSame) {
+                const isTripleSeven = result[0] === '7';
+                const multiplier = isTripleSeven ? 10 : 5;
+                const winnings = currentBet * multiplier;
+                
                 money += winnings;
+                lossStreak = 0;
                 updateMoney();
                 winSound.play().catch(() => {});
-                alert(`Jackpot! Won ₵${winnings.toLocaleString()}`);
+                alert(`${isTripleSeven ? 'TRIPLE 777!' : 'Jackpot!'} Won ₵${winnings.toLocaleString()}`);
+            } else {
+                lossStreak++;
             }
         }
 
