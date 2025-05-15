@@ -1,89 +1,179 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aconite Studios</title>
     <style>
         body {
-            background-color: #0d1117;
-            color: #c9d1d9;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
+            background: url('https://img.freepik.com/free-photo/old-brown-paper-texture-background_1373-431.jpg');
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        header {
+
+        #slotMachine {
+            background: #382218;
             padding: 20px;
+            border-radius: 10px;
+            border: 5px solid #543520;
+            box-shadow: 0 0 20px #000000;
         }
-        .container {
+
+        #moneyCounter {
+            color: gold;
+            font-size: 40px;
+            text-shadow: 2px 2px 4px #000000;
+            margin: 20px;
+        }
+
+        .reels {
+            display: flex;
+            gap: 10px;
+            padding: 20px;
+            background: #654321;
+            border-radius: 5px;
+        }
+
+        .reel {
+            width: 100px;
+            height: 100px;
+            background: #f0f0f0;
+            border: 3px solid #543520;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+
+        #controls {
             display: flex;
             justify-content: center;
             gap: 20px;
-            padding: 20px;
+            margin-top: 20px;
         }
-        .card {
-            background-color: #161b22;
-            border-radius: 10px;
-            padding: 15px;
-            text-decoration: none;
-            color: #c9d1d9;
-            width: 200px;
-            text-align: center;
-            transition: 0.3s;
-        }
-        .card:hover {
-            background-color: #1f6feb;
-        }
-        .card img {
-            width: 100%;
+
+        button {
+            padding: 10px 20px;
+            font-size: 20px;
+            cursor: pointer;
+            border: none;
             border-radius: 5px;
         }
-        footer {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #161b22;
+
+        #betControls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 24px;
+        }
+
+        #lever {
+            width: 80px;
+            height: 120px;
+            background: #c0c0c0;
+            border: 5px solid #808080;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-left: 20px;
+        }
+
+        #lever:active {
+            transform: translateY(10px);
+        }
+
+        .betButton {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        #decreaseBet {
+            background: #ff4444;
+        }
+
+        #increaseBet {
+            background: #44ff44;
         }
     </style>
 </head>
 <body>
-    <header>
-        <img src="logo.png" alt="Site Logo" class="logo">
-        <h1 id="title">Aconite Studios</h1>
-        <p id="subtitle">Project wikis and information hub.</p>
-    </header>
-    <main>
-        <div class="container" id="cards-container">
-            <a href="discharged.html" class="card">
-                <img src="discharged.png" alt="Discharged logo">
-                <h2>Discharged</h2>
-                <p>Natural Neutralisers.</p>
-            </a>
-            <a href="astray.html" class="card">
-                <img src="astray.jpg" alt="Astray logo">
-                <h2>Astray Archipelago</h2>
-                <p>They're watching you.</p>
-            </a>
-            <a href="beaconated.html" class="card">
-                <img src="beaconated.jpg" alt="Beaconated logo">
-                <h2>Beaconated</h2>
-                <p>Description for Page 3.</p>
-            </a>
-            <a href="carved.html" class="card">
-                <img src="carved.jpg" alt="Carved logo">
-                <h2>Carved</h2>
-                <p>A Decor Mod based around new Trees!.</p>
-            </a>
+    <div id="moneyCounter">₵50,000</div>
+    <div id="slotMachine">
+        <div class="reels">
+            <div class="reel" id="reel1">♠</div>
+            <div class="reel" id="reel2">♥</div>
+            <div class="reel" id="reel3">♦</div>
         </div>
-    </main>
-    <footer>
-        <p>&copy; 2025 - Aconite Studios. Released under the Creative Commons license.</p>
-    </footer>
+        <div id="controls">
+            <div id="betControls">
+                <button class="betButton" id="decreaseBet">-</button>
+                <div id="currentBet">₵2,000</div>
+                <button class="betButton" id="increaseBet">+</button>
+            </div>
+            <div id="lever"></div>
+        </div>
+    </div>
+
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            document.getElementById("title").innerText = "Aconite Studios";
-            document.getElementById("subtitle").innerText = "Official documentation for Aconite's mods.";
-        });
+        let money = 50000;
+        let currentBet = 2000;
+        const symbols = ['♠', '♣', '♥', '♦', '7'];
+        const spinSound = new Audio('spin.mp3');
+        const winSound = new Audio('win.mp3');
+        let isSpinning = false;
+
+        document.getElementById('lever').addEventListener('click', spin);
+        document.getElementById('increaseBet').addEventListener('click', () => changeBet(1000));
+        document.getElementById('decreaseBet').addEventListener('click', () => changeBet(-1000));
+
+        function changeBet(amount) {
+            currentBet = Math.min(Math.max(currentBet + amount, 2000), 10000);
+            document.getElementById('currentBet').textContent = `₵${currentBet.toLocaleString()}`;
+        }
+
+        function spin() {
+            if (isSpinning || money < currentBet) return;
+
+            isSpinning = true;
+            money -= currentBet;
+            updateMoney();
+            spinSound.play();
+
+            const reels = document.querySelectorAll('.reel');
+            let spinsCompleted = 0;
+
+            reels.forEach((reel, index) => {
+                let spins = 0;
+                const spinInterval = setInterval(() => {
+                    reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                    spins++;
+                    if (spins > 10 + (index * 5)) {
+                        clearInterval(spinInterval);
+                        spinsCompleted++;
+                        if (spinsCompleted === 3) {
+                            checkWin();
+                            isSpinning = false;
+                        }
+                    }
+                }, 50);
+            });
+        }
+
+        function checkWin() {
+            const symbols = Array.from(document.querySelectorAll('.reel')).map(reel => reel.textContent);
+            if (new Set(symbols).size === 1) {
+                const winnings = currentBet * 5;
+                money += winnings;
+                updateMoney();
+                winSound.play();
+                alert(`Jackpot! Won ₵${winnings.toLocaleString()}`);
+            }
+        }
+
+        function updateMoney() {
+            document.getElementById('moneyCounter').textContent = `₵${money.toLocaleString()}`;
+        }
     </script>
 </body>
 </html>
